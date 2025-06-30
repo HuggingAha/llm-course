@@ -194,18 +194,18 @@ NLP 是人工智能的一个迷人分支，它弥合了人类语言和机器理�
 * [LLM360](https://www.llm360.ai/) by LLM360: 一个用于开源 LLM 的框架，包含训练和数据准备代码、数据、指标和模型。
 
 ---
-### 3. 训练后数据集
+### 3. 后训练数据集
 
-训练后数据集具有精确的结构，包括指令和回答（监督微调）或指令和选择/拒绝的回答（偏好对齐）。对话结构比用于预训练的原始文本要少见得多，这就是为什么我们经常需要处理种子数据并对其进行提炼，以提高样本的准确性、多样性和复杂性。更多信息和示例请见我的仓库 [💾 LLM Datasets](https://github.com/mlabonne/llm-datasets)。
+后训练数据集具有精确的结构，包括指令和回答（监督微调）或指令和选择/拒绝的回答（偏好对齐）。对话结构比用于预训练的原始文本要少见得多，这就是为什么我们经常需要处理种子数据并对其进行提炼，以提高样本的准确性、多样性和复杂性。更多信息和示例请见我的仓库 [💾 LLM Datasets](https://github.com/mlabonne/llm-datasets)。
 
-* **存储和聊天模板**: 由于对话结构的存在，训练后数据集以特定格式（如 ShareGPT 或 OpenAI/HF）存储。然后，这些格式被映射到聊天模板（如 ChatML 或 Alpaca），以生成模型训练所用的最终样本。
+* **存储和聊天模板**: 由于对话结构的存在，后训练数据集以特定格式（如 ShareGPT 或 OpenAI/HF）存储。然后，这些格式被映射到聊天模板（如 ChatML 或 Alpaca），以生成模型训练所用的最终样本。
 * **合成数据生成**: 使用前沿模型（如 GPT-4o）基于种子数据创建指令-回答对。这种方法可以灵活、可扩展地创建高质量的答案数据集。关键考虑因素包括设计多样化的种子任务和有效的系统提示。
 * **数据增强**: 使用经过验证的输出（使用单元测试或求解器）、带有拒绝采样的多个答案、[Auto-Evol](https://arxiv.org/abs/2406.00770)、思维链 (Chain-of-Thought)、分支-解决-合并 (Branch-Solve-Merge)、角色扮演等技术来增强现有样本。
 * **质量过滤**: 传统技术包括基于规则的过滤、使用 MinHash 或 embeddings 删除重复或近似重复的样本，以及 n-gram 去污。奖励模型和裁判 LLM 通过细粒度和可定制的质量控制来补充这一步骤。
 
 📚 **参考资料**:
 * [Synthetic Data Generator](https://huggingface.co/spaces/argilla/synthetic-data-generator) by Argilla: 在 Hugging Face Space 中使用自然语言构建数据集的初学者友好方式。
-* [LLM Datasets](https://github.com/mlabonne/llm-datasets) by Maxime Labonne: 精选的训练后数据集和工具列表。
+* [LLM Datasets](https://github.com/mlabonne/llm-datasets) by Maxime Labonne: 精选的后训练数据集和工具列表。
 * [NeMo-Curator](https://github.com/NVIDIA/NeMo-Curator) by Nvidia: 用于预训练和训练后数据的数据集准备和管理框架。
 * [Distilabel](https://distilabel.argilla.io/dev/sections/pipeline_samples/) by Argilla: 用于生成合成数据的框架。它还包括对 UltraFeedback 等论文的有趣复现。
 * [Semhash](https://github.com/MinishLab/semhash) by MinishLab: 使用蒸馏嵌入模型进行近乎去重和去污的极简库。
