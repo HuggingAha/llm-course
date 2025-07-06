@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Minimal Prompt Exploration: Fundamentals of Context Engineering
+最小提示探索：上下文工程基础
 ==============================================================
 
-This notebook introduces the core principles of context engineering by exploring minimal, atomic prompts and their direct impact on LLM output and behavior.
+本脚本通过探索最小、原子的提示词，介绍上下文工程的核心原理，并观察其对大语言模型（LLM）输出和行为的直接影响。
 
-Key concepts covered:
-1. Constructing atomic prompts for maximum clarity and control
-2. Measuring effectiveness through token count and model response quality
-3. Iterative prompt modification for rapid feedback cycles
-4. Observing context drift and minimal prompt boundaries
-5. Foundations for scaling from atomic prompts to protocolized shells
+主要涵盖内容：
+1. 构建原子级提示词，实现最大清晰度与可控性
+2. 通过 token 数和模型响应质量衡量有效性
+3. 迭代修改提示词，实现快速反馈循环
+4. 观察上下文漂移和最小提示边界
+5. 为从原子提示扩展到协议化外壳打下基础
 
-Usage:
-    # In Jupyter or Colab:
+用法：
+    # 在 Jupyter 或 Colab 中：
     %run 01_min_prompt.py
-    # or
-    # Edit and run each section independently to experiment with prompt effects
+    # 或
+    # 可独立编辑和运行每个部分，实验提示词效果
 
-Notes:
-    - Each section of this notebook is designed for hands-on experimentation.
-    - Modify prompts and observe changes in tokenization and output fidelity.
-    - Use this as a foundation for building up to advanced context engineering workflows.
+注意：
+    - 本脚本每个部分都适合动手实验。
+    - 可修改提示词，观察分词和输出保真度的变化。
+    - 可作为进阶上下文工程工作流的基础。
 
 """
 
@@ -33,62 +33,62 @@ import json
 from typing import Dict, List, Any, Tuple, Optional
 import matplotlib.pyplot as plt
 
-# If you're using OpenAI's API, uncomment these lines and add your API key
+# 如果你使用 OpenAI 的 API，取消注释下方并设置你的 API 密钥
 # import openai
-# openai.api_key = os.getenv("OPENAI_API_KEY")  # Set your API key as an environment variable
+# openai.api_key = os.getenv("OPENAI_API_KEY")  # 建议将 API 密钥设置为环境变量
 
-# If you're using another provider, adjust accordingly
-# Dummy LLM class for demonstration purposes
+# 如使用其他厂商，请相应调整
+# 以下为演示用的简易 LLM 类
 class SimpleLLM:
-    """Minimal LLM interface for demonstration."""
+    """最简 LLM 接口，仅用于演示。"""
     
     def __init__(self, model_name: str = "dummy-model"):
-        """Initialize LLM interface."""
+        """初始化 LLM 接口。"""
         self.model_name = model_name
-        self.total_tokens_used = 0
-        self.total_requests = 0
-        
+        self.total_tokens_used = 0  # 累计 token 数
+        self.total_requests = 0  # 累计请求次数
+
     def count_tokens(self, text: str) -> int:
         """
-        Count tokens in text using a very simple approximation.
-        In production, use the tokenizer specific to your model.
+        用极其简单的方式统计文本 token 数。
+        实际生产中应使用模型专用的分词器。
         """
-        # This is an extremely rough approximation, use a proper tokenizer in practice
+        # 这里只是粗略估算，实际应用请用专业分词器
         return len(text.split())
     
     def generate(self, prompt: str) -> str:
         """
-        Generate text from a prompt (dummy implementation).
-        In a real notebook, this would call an actual LLM API.
+        根据提示词生成文本（演示用假实现）。
+        实际应用中应调用真实的 LLM API。
         """
-        # In a real implementation, this would call the API
+        # 实际实现应调用 API
         # response = openai.ChatCompletion.create(
         #     model="gpt-4",
         #     messages=[{"role": "user", "content": prompt}]
         # )
         # return response.choices[0].message.content
-        
-        # For demo purposes, we'll just acknowledge the prompt
+
+        # 演示用，仅返回提示词 token 数
         tokens = self.count_tokens(prompt)
         self.total_tokens_used += tokens
         self.total_requests += 1
-        
-        return f"[This is where the LLM response would appear. Your prompt used approximately {tokens} tokens.]"
+
+        return f"[此处为 LLM 响应内容。你的提示词大约用了 {tokens} 个 token。]"
     
     def get_stats(self) -> Dict[str, Any]:
-        """Return usage statistics."""
+        """返回使用统计信息。"""
         return {
             "total_tokens": self.total_tokens_used,
             "total_requests": self.total_requests,
             "avg_tokens_per_request": self.total_tokens_used / max(1, self.total_requests)
         }
 
-# Initialize our LLM interface
+# 初始化 LLM 接口
 llm = SimpleLLM()
 
-# ----- EXPERIMENT 1: THE ATOMIC PROMPT -----
+# ----- 实验1：原子级提示词 -----
 print("\n----- EXPERIMENT 1: THE ATOMIC PROMPT -----")
-print("Let's start with the most basic unit: a single instruction.")
+print("让我们从最基本的单条指令开始。")
 
 atomic_prompt = "Write a short poem about programming."
 tokens = llm.count_tokens(atomic_prompt)
@@ -99,18 +99,18 @@ print("\nGenerating response...")
 response = llm.generate(atomic_prompt)
 print(f"\nResponse:\n{response}")
 
-# ----- EXPERIMENT 2: ADDING CONSTRAINTS -----
+# ----- 实验2：添加约束 -----
 print("\n----- EXPERIMENT 2: ADDING CONSTRAINTS -----")
-print("Now let's add constraints to our atomic prompt and observe the difference.")
+print("现在我们为原子提示词添加约束，观察变化。")
 
-# Let's create three versions with increasing constraints
+# 创建三种不同约束的提示词
 prompts = [
-    "Write a short poem about programming.",  # Original
-    "Write a short poem about programming in 4 lines.",  # Added length constraint
-    "Write a short haiku about programming using only simple words."  # Format and vocabulary constraints
+    "Write a short poem about programming.",  # 原始
+    "Write a short poem about programming in 4 lines.",  # 增加长度约束
+    "Write a short haiku about programming using only simple words.",  # 增加格式和词汇约束
 ]
 
-# Measure tokens and generate responses
+# 统计 token 并生成响应
 results = []
 for i, prompt in enumerate(prompts):
     tokens = llm.count_tokens(prompt)
@@ -131,15 +131,15 @@ for i, prompt in enumerate(prompts):
     print(f"Latency: {results[-1]['latency']:.4f} seconds")
     print(f"Response:\n{response}")
 
-# ----- EXPERIMENT 3: MEASURING THE ROI CURVE -----
+# ----- 实验3：ROI 曲线测量 -----
 print("\n----- EXPERIMENT 3: MEASURING THE ROI CURVE -----")
-print("Let's explore the relationship between prompt complexity and output quality.")
+print("探索提示词复杂度与输出质量的关系。")
 
-# In a real notebook, you would define subjective quality scores for each response
-# For this demo, we'll use placeholder values
-quality_scores = [3, 6, 8]  # Placeholder subjective scores on a scale of 1-10
+# 实际应用中应为每个响应定义主观质量分数
+# 此处为演示，使用占位分数
+quality_scores = [3, 6, 8]  # 1-10分主观分数
 
-# Plot tokens vs. quality
+# 绘制 token 数与质量的关系曲线
 plt.figure(figsize=(10, 6))
 tokens_list = [r["tokens"] for r in results]
 plt.plot(tokens_list, quality_scores, marker='o', linestyle='-', color='blue')
@@ -148,20 +148,20 @@ plt.ylabel('Output Quality (1-10)')
 plt.title('Token-Quality ROI Curve')
 plt.grid(True)
 
-# Add annotations
+# 添加注释
 for i, (x, y) in enumerate(zip(tokens_list, quality_scores)):
     plt.annotate(f"Prompt {i+1}", (x, y), textcoords="offset points", 
                  xytext=(0, 10), ha='center')
 
-# Show the plot (in Jupyter this would display inline)
+# Jupyter 环境下可显示图表
 # plt.show()
-print("[A plot would display here in a Jupyter environment]")
+print("[Jupyter 环境下此处会显示图表]")
 
-# ----- EXPERIMENT 4: MINIMAL CONTEXT ENHANCEMENT -----
+# ----- 实验4：最小上下文增强 -----
 print("\n----- EXPERIMENT 4: MINIMAL CONTEXT ENHANCEMENT -----")
-print("Now we'll add minimal context to improve output quality while keeping token count low.")
+print("现在我们在保持 token 数较低的前提下，添加最小上下文以提升输出质量。")
 
-# Let's create a prompt with a small amount of strategic context
+# 构造带有策略性上下文的提示词
 enhanced_prompt = """Task: Write a haiku about programming.
 
 A haiku is a three-line poem with 5, 7, and 5 syllables per line.
@@ -174,13 +174,16 @@ print(f"Token Count: {tokens}")
 response = llm.generate(enhanced_prompt)
 print(f"\nResponse:\n{response}")
 
-# ----- EXPERIMENT 5: MEASURING CONSISTENCY -----
+# ----- 实验5：一致性测量 -----
 print("\n----- EXPERIMENT 5: MEASURING CONSISTENCY -----")
-print("Let's test how consistent the outputs are with minimal vs. enhanced prompts.")
+print("测试最小提示与增强提示下输出的一致性。")
 
-# Function to generate multiple responses and measure consistency
+# 生成多次响应并测量一致性
+# 实际应用中可用语义相似度等指标
+# 这里只做演示
+
 def measure_consistency(prompt: str, n_samples: int = 3) -> Dict[str, Any]:
-    """Generate multiple responses and measure consistency metrics."""
+    """多次生成响应并测量一致性（演示用）。"""
     responses = []
     total_tokens = 0
     
@@ -188,11 +191,10 @@ def measure_consistency(prompt: str, n_samples: int = 3) -> Dict[str, Any]:
         response = llm.generate(prompt)
         responses.append(response)
         total_tokens += llm.count_tokens(prompt)
-    
-    # In a real notebook, you would implement proper consistency metrics
-    # such as semantic similarity between responses
-    consistency_score = 0.5  # Placeholder value
-    
+
+    # 实际应实现更科学的一致性度量
+    consistency_score = 0.5  # 占位分数
+
     return {
         "prompt": prompt,
         "responses": responses,
@@ -200,41 +202,41 @@ def measure_consistency(prompt: str, n_samples: int = 3) -> Dict[str, Any]:
         "consistency_score": consistency_score
     }
 
-# Compare basic vs enhanced prompt
+# 对比基础提示与增强提示
 basic_results = measure_consistency(prompts[0])
 enhanced_results = measure_consistency(enhanced_prompt)
 
 print(f"\nBasic Prompt Consistency Score: {basic_results['consistency_score']}")
 print(f"Enhanced Prompt Consistency Score: {enhanced_results['consistency_score']}")
 
-# ----- CONCLUSION -----
+# ----- 结论 -----
 print("\n----- CONCLUSION -----")
-print("Key insights from our experiments:")
-print("1. Even small additions to prompts can significantly impact output quality")
-print("2. There's an ROI curve where token count and quality find an optimal balance")
-print("3. Adding minimal but strategic context improves consistency")
-print("4. The best prompts are clear, concise, and provide just enough context")
+print("实验总结：")
+print("1. 即使是很小的提示词调整也会显著影响输出质量")
+print("2. token 数与质量之间存在 ROI 曲线，需平衡")
+print("3. 添加策略性上下文可提升一致性")
+print("4. 最佳提示词应清晰、简洁并提供恰到好处的上下文")
 
 print("\nTotal tokens used in this notebook:", llm.get_stats()["total_tokens"])
 
-# ----- NEXT STEPS -----
+# ----- 后续建议 -----
 print("\n----- NEXT STEPS -----")
-print("1. Try these experiments with a real LLM API")
-print("2. Implement proper consistency and quality metrics")
-print("3. Explore the concept of 'molecules' - combining multiple instructions")
-print("4. Experiment with few-shot examples in the context window")
+print("1. 用真实 LLM API 进行实验")
+print("2. 实现更科学的一致性与质量度量")
+print("3. 探索“分子”概念——组合多条指令")
+print("4. 尝试 few-shot 示例在上下文窗口中的效果")
 
 """
-EXERCISE FOR THE READER:
+读者练习：
 
-1. Connect this notebook to a real LLM API (OpenAI, Anthropic, etc.)
-2. Test the same prompts with different model sizes
-3. Create your own token-quality curve for a task you care about
-4. Find the "minimum viable context" for your specific use case
+1. 将本脚本接入真实 LLM API（如 OpenAI、Anthropic 等）
+2. 用不同模型尺寸测试同一组提示词
+3. 针对你关心的任务绘制自己的 token-质量曲线
+4. 找到你场景下的“最小可用上下文”
 
-See 02_expand_context.ipynb for more advanced context engineering techniques!
+进阶内容见 02_expand_context.ipynb。
 """
 
-# If this were a Jupyter notebook, we'd save the results to a file here
+# 如在 Jupyter 环境下，可将结果保存到文件
 # with open('experiment_results.json', 'w') as f:
 #     json.dump(results, f, indent=2)
